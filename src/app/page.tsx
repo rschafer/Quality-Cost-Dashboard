@@ -335,9 +335,9 @@ export default function HomePage() {
               <span className={hasActiveFilters ? "underline decoration-primary underline-offset-2" : ""}>
                 {stats.dateRange} &middot; {stats.totalBugs} tickets
               </span>
-              <svg className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+              <svg className="w-3.5 h-3.5 text-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
               {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-              {filterLoading && <span className="text-xs text-muted-foreground">Updating...</span>}
+              {filterLoading && <span className="text-xs text-foreground">Updating...</span>}
             </button>
           </div>
           <Button variant="outline" size="sm" onClick={handleReset}>
@@ -352,7 +352,7 @@ export default function HomePage() {
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* Date range */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">From</label>
+                  <label className="text-xs font-medium text-foreground block mb-1">From</label>
                   <Input
                     type="date"
                     value={filters.dateFrom}
@@ -361,7 +361,7 @@ export default function HomePage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">To</label>
+                  <label className="text-xs font-medium text-foreground block mb-1">To</label>
                   <Input
                     type="date"
                     value={filters.dateTo}
@@ -372,7 +372,7 @@ export default function HomePage() {
 
                 {/* Priority */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">Priority</label>
+                  <label className="text-xs font-medium text-foreground block mb-1">Priority</label>
                   <div className="flex flex-wrap gap-1">
                     {(stats.filterOptions?.priorities || []).map((p) => (
                       <button
@@ -399,7 +399,7 @@ export default function HomePage() {
 
                 {/* Resolution */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">Resolution</label>
+                  <label className="text-xs font-medium text-foreground block mb-1">Resolution</label>
                   <div className="flex flex-wrap gap-1">
                     {(stats.filterOptions?.resolutions || []).map((r) => (
                       <button
@@ -426,7 +426,7 @@ export default function HomePage() {
 
                 {/* Module */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">Module</label>
+                  <label className="text-xs font-medium text-foreground block mb-1">Module</label>
                   <div className="flex flex-wrap gap-1">
                     {(stats.filterOptions?.modules || []).map((m) => (
                       <button
@@ -453,7 +453,7 @@ export default function HomePage() {
 
                 {/* Category */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">Category</label>
+                  <label className="text-xs font-medium text-foreground block mb-1">Category</label>
                   <div className="flex flex-wrap gap-1">
                     {(stats.filterOptions?.categories || []).map((c) => (
                       <button
@@ -500,12 +500,12 @@ export default function HomePage() {
             <TooltipTrigger asChild>
               <Card className="cursor-help">
                 <CardContent className="p-5">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <p className="text-xs font-medium text-foreground uppercase tracking-wide">
                     Total Bug Cost
                     <svg className="w-3.5 h-3.5 inline-block ml-1 -mt-0.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeWidth={2} d="M12 16v-4m0-4h.01" /></svg>
                   </p>
                   <p className="text-2xl font-bold mt-1 font-mono">{fmt(stats.totalEstimatedCost)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-foreground mt-1">
                     {stats.totalBugs} tickets @{" "}
                     {editingRate ? (
                       <span className="inline-flex items-center">
@@ -547,23 +547,23 @@ export default function HomePage() {
           </Tooltip>
           <Card>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Wasted on Noise</p>
+              <p className="text-xs font-medium text-foreground uppercase tracking-wide">Wasted on Noise</p>
               <p className="text-2xl font-bold mt-1 font-mono text-amber-600">{fmt(stats.noiseCost)}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stats.noiseCount} tickets ({stats.noisePercent}%)</p>
+              <p className="text-xs text-foreground mt-1">{stats.noiseCount} tickets ({stats.noisePercent}%)</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Avg Resolution</p>
+              <p className="text-xs font-medium text-foreground uppercase tracking-wide">Avg Resolution</p>
               <p className="text-2xl font-bold mt-1 font-mono">{stats.avgResolutionDays}d</p>
-              <p className="text-xs text-muted-foreground mt-1">Median: {stats.medianResolutionDays}d</p>
+              <p className="text-xs text-foreground mt-1">Median: {stats.medianResolutionDays}d</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical + High</p>
+              <p className="text-xs font-medium text-foreground uppercase tracking-wide">Critical + High</p>
               <p className="text-2xl font-bold mt-1 font-mono text-red-600">{stats.criticalCount + stats.highCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stats.criticalCount} critical, {stats.highCount} high</p>
+              <p className="text-xs text-foreground mt-1">{stats.criticalCount} critical, {stats.highCount} high</p>
             </CardContent>
           </Card>
         </div>
@@ -596,7 +596,7 @@ export default function HomePage() {
                       className={`px-2.5 py-1 transition-colors ${
                         costBreakdownView === key
                           ? "bg-primary text-primary-foreground"
-                          : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                          : "bg-muted/40 text-foreground hover:bg-muted"
                       }`}
                     >
                       {label}
@@ -677,7 +677,7 @@ export default function HomePage() {
                 Code Changes {stats.codeChangePercent}%
               </div>
               <div
-                className="h-full bg-gray-200 flex items-center justify-center text-gray-600"
+                className="h-full bg-gray-200 flex items-center justify-center text-foreground"
                 style={{ width: `${100 - stats.codeChangePercent}%` }}
               >
                 Noise {(100 - stats.codeChangePercent).toFixed(1)}%
@@ -686,18 +686,31 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Suggested Changes */}
+        {/* Summary & Suggested Changes */}
         {suggestions.length > 0 && (
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base">Suggested Changes</CardTitle>
-                  <CardDescription className="text-xs">Data-driven recommendations to reduce bug cost and improve quality.</CardDescription>
-                </div>
+              <div>
+                <CardTitle className="text-base">Summary &amp; Suggested Changes</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
+              <p className="text-sm text-foreground mb-4 leading-relaxed">
+                {(() => {
+                  const topCat = stats.costByCategory[0];
+                  const lines: string[] = [];
+                  lines.push(`Out of ${stats.totalBugs} tickets, ${stats.noisePercent}% turned out to be noise (duplicates, not reproducible, etc.) and never needed a code fix.`);
+                  if (topCat) {
+                    lines.push(`The biggest problem area is "${topCat.name}" with ${topCat.count} tickets.`);
+                  }
+                  if (stats.avgResolutionDays > 7) {
+                    lines.push(`Tickets take an average of ${stats.avgResolutionDays} days to resolve — quicker triage and prioritization could help.`);
+                  } else {
+                    lines.push(`Tickets are resolved in ${stats.avgResolutionDays} days on average (${stats.medianResolutionDays} day median).`);
+                  }
+                  return lines.join(" ");
+                })()}
+              </p>
               <div className="space-y-3">
                 {suggestions.map((s, i) => (
                   <div key={i} className="flex gap-3 items-start">
@@ -709,7 +722,7 @@ export default function HomePage() {
                     </Badge>
                     <div className="min-w-0">
                       <p className="text-sm font-medium">{s.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
+                      <p className="text-xs text-foreground mt-0.5">{s.description}</p>
                     </div>
                   </div>
                 ))}
@@ -732,7 +745,7 @@ export default function HomePage() {
 
             {categoryLoading && (
               <div className="flex items-center justify-center py-8">
-                <svg className="w-6 h-6 animate-spin text-muted-foreground" fill="none" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 animate-spin text-foreground" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
@@ -743,7 +756,7 @@ export default function HomePage() {
               <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 {/* Priority breakdown */}
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">Priority</p>
+                  <p className="text-xs font-medium text-foreground uppercase tracking-wide mb-1.5">Priority</p>
                   <div className="flex flex-wrap gap-1.5">
                     {Object.entries(categoryDetail.priorityBreakdown)
                       .sort((a, b) => b[1] - a[1])
@@ -759,14 +772,14 @@ export default function HomePage() {
 
                 {/* Resolution breakdown */}
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">Resolutions</p>
+                  <p className="text-xs font-medium text-foreground uppercase tracking-wide mb-1.5">Resolutions</p>
                   <div className="space-y-1">
                     {Object.entries(categoryDetail.resolutionBreakdown)
                       .sort((a, b) => b[1] - a[1])
                       .map(([resolution, count]) => (
                         <div key={resolution} className="flex items-center justify-between text-sm">
                           <span>{resolution}</span>
-                          <span className="text-muted-foreground text-xs">{count}</span>
+                          <span className="text-foreground text-xs">{count}</span>
                         </div>
                       ))}
                   </div>
@@ -775,7 +788,7 @@ export default function HomePage() {
                 {/* Avg resolution */}
                 {categoryDetail.avgResolutionDays > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Avg Resolution Time</p>
+                    <p className="text-xs font-medium text-foreground uppercase tracking-wide mb-1">Avg Resolution Time</p>
                     <p className="text-sm font-mono">{categoryDetail.avgResolutionDays} days</p>
                   </div>
                 )}
@@ -783,7 +796,7 @@ export default function HomePage() {
                 {/* Suggestions */}
                 {categoryDetail.suggestions.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">Suggestions</p>
+                    <p className="text-xs font-medium text-foreground uppercase tracking-wide mb-1.5">Suggestions</p>
                     <div className="space-y-2">
                       {categoryDetail.suggestions.map((s, i) => (
                         <div key={i} className="bg-accent/50 rounded-lg p-3">
@@ -796,7 +809,7 @@ export default function HomePage() {
                             </Badge>
                             <p className="text-sm font-medium">{s.title}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">{s.description}</p>
+                          <p className="text-xs text-foreground mt-1">{s.description}</p>
                         </div>
                       ))}
                     </div>
@@ -806,10 +819,10 @@ export default function HomePage() {
                 {/* Sample bugs */}
                 {categoryDetail.sampleSummaries.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">Sample Bugs</p>
+                    <p className="text-xs font-medium text-foreground uppercase tracking-wide mb-1.5">Sample Bugs</p>
                     <ul className="space-y-1">
                       {categoryDetail.sampleSummaries.map((s, i) => (
-                        <li key={i} className="text-xs text-muted-foreground flex gap-2">
+                        <li key={i} className="text-xs text-foreground flex gap-2">
                           <span className="shrink-0">&#8226;</span>
                           <span>{s}</span>
                         </li>
@@ -832,7 +845,7 @@ export default function HomePage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center pt-8">
         <h2 className="text-2xl font-bold">Upload Jira Exports</h2>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-foreground mt-2">
           Drop one or more CSV files exported from Jira. Tag each with a team or product name.
         </p>
       </div>
@@ -858,11 +871,11 @@ export default function HomePage() {
           }}
           className="hidden"
         />
-        <svg className="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-10 h-10 text-foreground mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>
         <p className="text-sm font-medium">Drop CSV files here, or click to browse</p>
-        <p className="text-xs text-muted-foreground mt-1">Upload multiple files at once</p>
+        <p className="text-xs text-foreground mt-1">Upload multiple files at once</p>
       </div>
 
       {/* Preview with mock data */}
@@ -874,7 +887,7 @@ export default function HomePage() {
         >
           {loadingPreview ? "Loading..." : "Preview with mock data"}
         </Button>
-        <p className="text-xs text-muted-foreground mt-1.5">
+        <p className="text-xs text-foreground mt-1.5">
           See the dashboard in action with sample Jira data
         </p>
       </div>
@@ -886,7 +899,7 @@ export default function HomePage() {
             <div key={i} className="flex items-center gap-3 bg-white border rounded-lg p-3">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{f.file.name}</p>
-                <p className="text-xs text-muted-foreground">{(f.file.size / 1024).toFixed(0)} KB</p>
+                <p className="text-xs text-foreground">{(f.file.size / 1024).toFixed(0)} KB</p>
               </div>
               <Input
                 value={f.team}
@@ -894,7 +907,7 @@ export default function HomePage() {
                 placeholder="Team or product name"
                 className="w-48 h-8 text-sm"
               />
-              <button onClick={() => removeFile(i)} className="text-gray-400 hover:text-red-500 p-1">
+              <button onClick={() => removeFile(i)} className="text-foreground hover:text-red-500 p-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

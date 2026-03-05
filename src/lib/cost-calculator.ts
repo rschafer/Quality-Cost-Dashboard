@@ -1,5 +1,21 @@
-import type { Bug } from "@/generated/prisma/client";
 import type { CostEstimate, CostBreakdown } from "@/types/bug";
+
+/** Minimal bug shape needed for cost/stats computation (works with both Prisma Bug and parsed CSV) */
+export interface BugLike {
+  id: string;
+  jiraKey: string | null;
+  summary: string;
+  resolution: string | null;
+  priority: string | null;
+  module: string | null;
+  productCategory: string | null;
+  assignee: string | null;
+  storyPoints: number | null;
+  timeEstimateHours: number | null;
+  timeSpentHours: number | null;
+  createdAt: string | Date;
+  resolvedAt: string | Date | null;
+}
 
 // ~$140K/year national average software engineer salary
 // $140,000 / 2,080 standard work hours = ~$67/hour
@@ -19,7 +35,7 @@ const PRIORITY_HOURS: Record<string, number> = {
 };
 
 export function estimateBugCost(
-  bug: Bug,
+  bug: BugLike,
   hourlyRate: number = DEFAULT_HOURLY_RATE
 ): CostEstimate {
   // Priority 1: Use actual time spent from Jira (highest confidence)
@@ -77,7 +93,7 @@ export function estimateBugCost(
 }
 
 export function calculateCostBreakdown(
-  bugs: Bug[],
+  bugs: BugLike[],
   groupBy: "module" | "productCategory" | "resolution",
   hourlyRate: number = DEFAULT_HOURLY_RATE
 ): CostBreakdown[] {

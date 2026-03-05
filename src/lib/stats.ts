@@ -1,10 +1,9 @@
-import type { Bug } from "@/generated/prisma/client";
 import type { ComputedStats } from "@/types/analysis";
-import { estimateBugCost, DEFAULT_HOURLY_RATE } from "./cost-calculator";
+import { estimateBugCost, DEFAULT_HOURLY_RATE, type BugLike } from "./cost-calculator";
 
 function computeBreakdown(
-  bugs: Bug[],
-  field: keyof Bug
+  bugs: BugLike[],
+  field: keyof BugLike
 ): Record<string, { count: number; percent: number }> {
   const total = bugs.length;
   const counts: Record<string, number> = {};
@@ -56,7 +55,7 @@ export interface EnrichedStats extends ComputedStats {
 }
 
 export function computeStats(
-  bugs: Bug[],
+  bugs: BugLike[],
   hourlyRate: number = DEFAULT_HOURLY_RATE
 ): EnrichedStats {
   const total = bugs.length;
@@ -176,7 +175,8 @@ export function computeStats(
   const dates = bugs
     .map((b) => b.createdAt)
     .filter(Boolean)
-    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    .map((d) => new Date(d))
+    .sort((a, b) => a.getTime() - b.getTime());
   const dateRange =
     dates.length > 0
       ? `${dates[0].toISOString().split("T")[0]} to ${dates[dates.length - 1].toISOString().split("T")[0]}`

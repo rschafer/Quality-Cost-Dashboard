@@ -14,7 +14,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { DEFAULT_COLUMN_MAPPING } from "@/lib/csv-parser";
+import { DEFAULT_COLUMN_MAPPING, parseCSVFile } from "@/lib/csv-parser";
+import { computeStats } from "@/lib/stats";
 import { generateDashboardSuggestions } from "@/lib/suggestions";
 import type { Suggestion, CategoryDetail } from "@/lib/suggestions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -96,8 +97,7 @@ export default function HomePage() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
-  const [costBreakdownView, setCostBreakdownView] = useState<"category" | "module">("category");
-  const [costChartType, setCostChartType] = useState<"bar" | "table">("bar");
+  const [costBreakdownView, setCostBreakdownView] = useState<"category" | "module" | "resolution" | "moduleDist">("category");
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
     const fileArray = Array.from(newFiles).filter(
@@ -251,24 +251,37 @@ export default function HomePage() {
     setError("");
     try {
       const res = await fetch("/sample-data.csv");
-      const blob = await res.blob();
-      const file = new File([blob], "sample-data.csv", { type: "text/csv" });
+      const csvText = await res.text();
+      const { bugs: parsedBugs } = parseCSVFile(csvText, DEFAULT_COLUMN_MAPPING);
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("name", "Sample Support Data");
-      formData.append("mapping", JSON.stringify(DEFAULT_COLUMN_MAPPING));
+      if (parsedBugs.length === 0) throw new Error("No bugs found in sample data");
 
-      const importRes = await fetch("/api/import/csv", { method: "POST", body: formData });
-      const importData = await importRes.json();
-      if (!importRes.ok) throw new Error(importData.error || "Import failed");
+      // Convert parsed bugs to BugLike objects for stats computation
+      const bugs = parsedBugs.map((b, i) => ({
+        id: b.jiraKey || `mock-${i}`,
+        jiraKey: b.jiraKey,
+        summary: b.summary,
+        resolution: b.resolution,
+        priority: b.priority,
+        module: b.module,
+        productCategory: b.productCategory,
+        assignee: b.assignee,
+        storyPoints: b.storyPoints,
+        timeEstimateHours: b.timeEstimateHours,
+        timeSpentHours: b.timeSpentHours,
+        createdAt: b.createdAt,
+        resolvedAt: b.resolvedAt,
+      }));
 
-      setSnapshotId(importData.snapshot.id);
+      const computed = computeStats(bugs);
+      const filterOptions = {
+        priorities: [...new Set(bugs.map((b) => b.priority).filter(Boolean) as string[])].sort(),
+        resolutions: [...new Set(bugs.map((b) => b.resolution).filter(Boolean) as string[])].sort(),
+        modules: [...new Set(bugs.map((b) => b.module).filter(Boolean) as string[])].sort(),
+        categories: [...new Set(bugs.map((b) => b.productCategory).filter(Boolean) as string[])].sort(),
+      };
 
-      const statsRes = await fetch(`/api/analysis/summary?snapshotId=${importData.snapshot.id}`);
-      if (statsRes.ok) {
-        setStats(await statsRes.json());
-      }
+      setStats({ ...computed, filterOptions } as DashboardStats);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load mock data");
     } finally {
@@ -285,6 +298,17 @@ export default function HomePage() {
       ([name, { count, percent }]) => ({ name, count, percent })
     );
 
+    const filterIcon = (
+      <button
+        onClick={() => setFiltersOpen(!filtersOpen)}
+        className="relative p-1 rounded hover:bg-accent transition-colors"
+        title="Toggle filters"
+      >
+        <svg className="w-3.5 h-3.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+        {hasActiveFilters && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary" />}
+      </button>
+    );
+
     return (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
@@ -292,20 +316,12 @@ export default function HomePage() {
             <h2 className="text-2xl font-bold">Bug Analysis</h2>
             <p className="text-sm text-foreground mt-1">
               {stats.dateRange} &middot; {stats.totalBugs} tickets
-              {hasActiveFilters && <Badge variant="secondary" className="ml-2 text-[10px]">Filtered</Badge>}
               {filterLoading && <span className="ml-2 text-xs text-muted-foreground">Updating...</span>}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setFiltersOpen(!filtersOpen)}>
-              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-              Filters
-              {hasActiveFilters && <span className="ml-1 w-2 h-2 rounded-full bg-primary" />}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              Upload New Data
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={handleReset}>
+            Upload New Data
+          </Button>
         </div>
 
         {/* Filter bar */}
@@ -511,7 +527,10 @@ export default function HomePage() {
         {/* Efficiency bar */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Engineering Efficiency</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Engineering Efficiency</CardTitle>
+              {filterIcon}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="w-full h-8 rounded-lg overflow-hidden flex text-xs font-medium">
@@ -531,49 +550,38 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Cost breakdown — toggle between category and module */}
+        {/* Unified breakdown — category cost, module cost, resolution types, module distribution */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Cost Breakdown</CardTitle>
-                <CardDescription className="text-xs">Where engineering dollars go.{costBreakdownView === "category" && " Click a category for details."}</CardDescription>
+                <CardTitle className="text-base">Data Breakdown</CardTitle>
+                <CardDescription className="text-xs">
+                  {costBreakdownView === "category" && "Cost by category. Click a category for details."}
+                  {costBreakdownView === "module" && "Cost by module."}
+                  {costBreakdownView === "resolution" && "Bug count by resolution type."}
+                  {costBreakdownView === "moduleDist" && "Bug count by module."}
+                </CardDescription>
               </div>
-              <div className="flex gap-1">
+              <div className="flex items-center gap-1">
+                {filterIcon}
                 <div className="flex rounded-md border border-border overflow-hidden text-xs">
-                  <button
-                    onClick={() => setCostBreakdownView("category")}
-                    className={`px-2.5 py-1 transition-colors ${
-                      costBreakdownView === "category"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/40 text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    By Category
-                  </button>
-                  <button
-                    onClick={() => setCostBreakdownView("module")}
-                    className={`px-2.5 py-1 transition-colors ${
-                      costBreakdownView === "module"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/40 text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    By Module
-                  </button>
-                </div>
-                <div className="flex rounded-md border border-border overflow-hidden text-xs">
-                  {(["bar", "table"] as const).map((v) => (
+                  {([
+                    { key: "category", label: "Cost: Category" },
+                    { key: "module", label: "Cost: Module" },
+                    { key: "resolution", label: "Resolutions" },
+                    { key: "moduleDist", label: "Modules" },
+                  ] as const).map(({ key, label }) => (
                     <button
-                      key={v}
-                      onClick={() => setCostChartType(v)}
-                      className={`px-2.5 py-1 transition-colors capitalize ${
-                        costChartType === v
+                      key={key}
+                      onClick={() => setCostBreakdownView(key)}
+                      className={`px-2.5 py-1 transition-colors ${
+                        costBreakdownView === key
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted/40 text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      {v}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -581,39 +589,23 @@ export default function HomePage() {
             </div>
           </CardHeader>
           <CardContent>
-            {(() => {
+            {(costBreakdownView === "resolution" || costBreakdownView === "moduleDist") ? (
+              <SwitchableChart
+                data={costBreakdownView === "resolution" ? resolutionData : moduleData}
+                colors={costBreakdownView === "moduleDist" ? ["#7c3aed", "#14b8a6", "#3b82f6", "#f97316", "#ec4899", "#84cc16"] : undefined}
+              />
+            ) : (() => {
               const items = costBreakdownView === "category" ? stats.costByCategory : stats.costByModule;
               const maxCost = items.length > 0 ? items[0].cost : 1;
-
-              if (costChartType === "table") {
-                return (
-                  <div className="space-y-1.5">
-                    {items.map((item) => (
-                      <div key={item.name} className="flex items-center justify-between text-sm">
-                        {costBreakdownView === "category" ? (
-                          <button
-                            onClick={() => handleCategoryClick(item.name)}
-                            className="text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-xs font-medium"
-                          >
-                            {item.name}
-                          </button>
-                        ) : (
-                          <span className="text-xs font-medium">{item.name}</span>
-                        )}
-                        <span className="font-mono text-xs">
-                          {fmt(item.cost)} <span className="text-muted-foreground">· {item.count} bugs</span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                );
-              }
+              const isCat = costBreakdownView === "category";
+              const barColors = isCat ? ["#dc2626", "#ea580c", "#d97706"] : ["#7c3aed", "#14b8a6", "#3b82f6"];
+              const defaultColor = isCat ? "#3b82f6" : "#6b7280";
 
               return (
                 <div className="space-y-1.5">
                   {items.map((item, i) => {
                     const pct = maxCost > 0 ? (item.cost / maxCost) * 100 : 0;
-                    return costBreakdownView === "category" ? (
+                    return isCat ? (
                       <button
                         key={item.name}
                         onClick={() => handleCategoryClick(item.name)}
@@ -624,83 +616,44 @@ export default function HomePage() {
                           <svg className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                         </span>
                         <div className="flex-1 h-6 rounded overflow-hidden relative">
-                          <div
-                            className="h-full rounded"
-                            style={{
-                              width: `${Math.max(pct, 3)}%`,
-                              backgroundColor: i < 3 ? ["#dc2626", "#ea580c", "#d97706"][i] : "#3b82f6",
-                            }}
-                          />
-                          <span className="absolute inset-0 flex items-center px-2 text-xs">
-                            {fmt(item.cost)} &middot; {item.count} bugs
-                          </span>
+                          <div className="h-full rounded" style={{ width: `${Math.max(pct, 3)}%`, backgroundColor: i < 3 ? barColors[i] : defaultColor }} />
+                          <span className="absolute inset-0 flex items-center px-2 text-xs">{fmt(item.cost)} &middot; {item.count} bugs</span>
                         </div>
                       </button>
                     ) : (
-                      <div
-                        key={item.name}
-                        className="flex items-center gap-2 text-sm p-0.5"
-                      >
-                        <span className="w-28 text-right truncate text-xs font-medium">
-                          {item.name}
-                        </span>
+                      <div key={item.name} className="flex items-center gap-2 text-sm p-0.5">
+                        <span className="w-28 text-right truncate text-xs font-medium">{item.name}</span>
                         <div className="flex-1 h-6 rounded overflow-hidden relative">
-                          <div
-                            className="h-full rounded"
-                            style={{
-                              width: `${Math.max(pct, 3)}%`,
-                              backgroundColor: i < 3 ? ["#7c3aed", "#14b8a6", "#3b82f6"][i] : "#6b7280",
-                            }}
-                          />
-                          <span className="absolute inset-0 flex items-center px-2 text-xs">
-                            {fmt(item.cost)} &middot; {item.count} bugs
-                          </span>
+                          <div className="h-full rounded" style={{ width: `${Math.max(pct, 3)}%`, backgroundColor: i < 3 ? barColors[i] : defaultColor }} />
+                          <span className="absolute inset-0 flex items-center px-2 text-xs">{fmt(item.cost)} &middot; {item.count} bugs</span>
                         </div>
                       </div>
                     );
                   })}
+                  {isCat && stats.costByCategory.length >= 3 && (
+                    <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                      Fixing <strong>{stats.costByCategory.slice(0, 3).map(c => c.name).join(", ")}</strong> saves{" "}
+                      <strong>{fmt(stats.costByCategory.slice(0, 3).reduce((s, c) => s + c.cost, 0))}</strong>{" "}
+                      ({(stats.costByCategory.slice(0, 3).reduce((s, c) => s + c.cost, 0) / stats.totalEstimatedCost * 100).toFixed(0)}% of total).
+                    </p>
+                  )}
                 </div>
               );
             })()}
-            {costBreakdownView === "category" && stats.costByCategory.length >= 3 && (
-              <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
-                Fixing <strong>{stats.costByCategory.slice(0, 3).map(c => c.name).join(", ")}</strong> saves{" "}
-                <strong>{fmt(stats.costByCategory.slice(0, 3).reduce((s, c) => s + c.cost, 0))}</strong>{" "}
-                ({(stats.costByCategory.slice(0, 3).reduce((s, c) => s + c.cost, 0) / stats.totalEstimatedCost * 100).toFixed(0)}% of total).
-              </p>
-            )}
           </CardContent>
         </Card>
-
-        {/* Charts side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Resolution Types</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SwitchableChart data={resolutionData} />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Modules</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SwitchableChart
-                data={moduleData}
-                colors={["#7c3aed", "#14b8a6", "#3b82f6", "#f97316", "#ec4899", "#84cc16"]}
-              />
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Suggested Changes */}
         {suggestions.length > 0 && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Suggested Changes</CardTitle>
-              <CardDescription className="text-xs">Data-driven recommendations to reduce bug cost and improve quality.</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Suggested Changes</CardTitle>
+                  <CardDescription className="text-xs">Data-driven recommendations to reduce bug cost and improve quality.</CardDescription>
+                </div>
+                {filterIcon}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

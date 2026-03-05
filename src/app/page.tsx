@@ -524,32 +524,6 @@ export default function HomePage() {
         </div>
         </TooltipProvider>
 
-        {/* Efficiency bar */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Engineering Efficiency</CardTitle>
-              {filterIcon}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full h-8 rounded-lg overflow-hidden flex text-xs font-medium">
-              <div
-                className="h-full bg-blue-600 flex items-center justify-center text-white"
-                style={{ width: `${stats.codeChangePercent}%` }}
-              >
-                Code Changes {stats.codeChangePercent}%
-              </div>
-              <div
-                className="h-full bg-gray-200 flex items-center justify-center text-gray-600"
-                style={{ width: `${100 - stats.codeChangePercent}%` }}
-              >
-                Noise {(100 - stats.codeChangePercent).toFixed(1)}%
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Unified breakdown — category cost, module cost, resolution types, module distribution */}
         <Card>
           <CardHeader className="pb-3">
@@ -640,6 +614,32 @@ export default function HomePage() {
                 </div>
               );
             })()}
+          </CardContent>
+        </Card>
+
+        {/* Ticket Quality */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Ticket Quality</CardTitle>
+              {filterIcon}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-8 rounded-lg overflow-hidden flex text-xs font-medium">
+              <div
+                className="h-full bg-blue-600 flex items-center justify-center text-white"
+                style={{ width: `${stats.codeChangePercent}%` }}
+              >
+                Code Changes {stats.codeChangePercent}%
+              </div>
+              <div
+                className="h-full bg-gray-200 flex items-center justify-center text-gray-600"
+                style={{ width: `${100 - stats.codeChangePercent}%` }}
+              >
+                Noise {(100 - stats.codeChangePercent).toFixed(1)}%
+              </div>
+            </div>
           </CardContent>
         </Card>
 

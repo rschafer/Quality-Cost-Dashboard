@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { DEFAULT_COLUMN_MAPPING, parseCSVFile } from "@/lib/csv-parser";
 import { computeStats } from "@/lib/stats";
-import { DEFAULT_HOURLY_RATE } from "@/lib/cost-calculator";
-import { generateDashboardSuggestions } from "@/lib/suggestions";
+import { estimateBugCost, DEFAULT_HOURLY_RATE } from "@/lib/cost-calculator";
+import { generateDashboardSuggestions, generateCategorySuggestions } from "@/lib/suggestions";
 import type { Suggestion, CategoryDetail } from "@/lib/suggestions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import SwitchableChart from "@/components/charts/SwitchableChart";
@@ -227,10 +227,45 @@ export default function HomePage() {
   const hasActiveFilters = !!(filters.dateFrom || filters.dateTo || filters.priority.length || filters.resolution.length || filters.module.length || filters.category.length);
 
   const handleCategoryClick = useCallback(async (categoryName: string) => {
-    if (!snapshotId) return;
     setSelectedCategory(categoryName);
     setCategoryLoading(true);
     setCategoryDetail(null);
+
+    // Client-side computation for mock data
+    if (mockBugs) {
+      const allBugs = mockBugs;
+      const catBugs = allBugs.filter((b) => (b.productCategory || "Unknown") === categoryName);
+      const resolutionBreakdown: Record<string, number> = {};
+      const priorityBreakdown: Record<string, number> = {};
+      for (const bug of catBugs) {
+        const res = bug.resolution || "Unknown";
+        resolutionBreakdown[res] = (resolutionBreakdown[res] || 0) + 1;
+        const pri = bug.priority || "Unknown";
+        priorityBreakdown[pri] = (priorityBreakdown[pri] || 0) + 1;
+      }
+      const resDays = catBugs
+        .filter((b) => b.createdAt && b.resolvedAt)
+        .map((b) => (new Date(b.resolvedAt!).getTime() - new Date(b.createdAt).getTime()) / 86400000)
+        .filter((d) => d >= 0);
+      const avgResolutionDays = resDays.length > 0
+        ? Math.round((resDays.reduce((a, b) => a + b, 0) / resDays.length) * 10) / 10
+        : 0;
+      const cost = catBugs.reduce((s, b) => s + estimateBugCost(b, hourlyRate).estimatedCost, 0);
+      const totalCost = allBugs.reduce((s, b) => s + estimateBugCost(b, hourlyRate).estimatedCost, 0);
+      const sampleSummaries = catBugs.slice(0, 5).map((b) => b.summary);
+      const suggestions = generateCategorySuggestions({
+        name: categoryName, count: catBugs.length, cost: Math.round(cost),
+        resolutionBreakdown, priorityBreakdown, avgResolutionDays,
+        totalBugs: allBugs.length, totalCost: Math.round(totalCost),
+        summaries: catBugs.map((b) => b.summary),
+      });
+      setCategoryDetail({ name: categoryName, cost: Math.round(cost), count: catBugs.length, resolutionBreakdown, priorityBreakdown, avgResolutionDays, sampleSummaries, suggestions });
+      setCategoryLoading(false);
+      return;
+    }
+
+    // API path for imported data
+    if (!snapshotId) { setCategoryLoading(false); return; }
     try {
       const res = await fetch(
         `/api/analysis/category-detail?snapshotId=${snapshotId}&category=${encodeURIComponent(categoryName)}`
@@ -243,7 +278,7 @@ export default function HomePage() {
     } finally {
       setCategoryLoading(false);
     }
-  }, [snapshotId]);
+  }, [snapshotId, mockBugs, hourlyRate]);
 
   const suggestions = useMemo<Suggestion[]>(() => {
     if (!stats) return [];

@@ -1,0 +1,68 @@
+Key,Summary,Status,Resolution,Priority,Component,Labels,Assignee,Reporter,Created,Resolved,Time Spent,Story Points
+D-SUPPORT-101,Field error when saving custom field on Opportunities,Closed,Code Change,High,Opportunities,Field Error,John Smith,Jane Doe,2025-08-15,2025-08-22,8,3
+D-SUPPORT-102,Export fails for large datasets over 10k rows,Closed,Code Change,Critical,Opportunities,Export,Sarah Lee,Mike Chen,2025-08-18,2025-08-25,16,5
+D-SUPPORT-103,Filter dropdown not showing all values,Closed,Code Change,High,Opportunities,Filtering,John Smith,Lisa Park,2025-08-20,2025-08-28,6,2
+D-SUPPORT-104,Dashboard widget shows wrong aggregation,Closed,Code Change,Medium,Dashboards,Aggregation,Tom Wilson,Jane Doe,2025-08-22,2025-09-01,4,2
+D-SUPPORT-105,Duplicate ticket - field error on save,Closed,Duplicate,Low,Opportunities,Field Error,,,2025-08-25,,0,0
+D-SUPPORT-106,Cannot reproduce sorting issue,Closed,Not Reproducible,Medium,Opportunities,Sorting,John Smith,Mike Chen,2025-08-27,,2,1
+D-SUPPORT-107,Export CSV missing header row,Closed,Code Change,High,Opportunities,Export,Sarah Lee,Lisa Park,2025-09-01,2025-09-08,6,2
+D-SUPPORT-108,Need explanation of filter behavior,Closed,Product Explanation,Low,Opportunities,Filtering,,,2025-09-03,,1,0
+D-SUPPORT-109,Field validation error on currency fields,Closed,Code Change,High,Opportunities,Field Error,John Smith,Jane Doe,2025-09-05,2025-09-12,10,3
+D-SUPPORT-110,Account page loads slowly,Closed,Code Change,Medium,Accounts,Performance,Tom Wilson,Mike Chen,2025-09-08,2025-09-18,12,5
+D-SUPPORT-111,Starred deals not syncing across views,Closed,Config Change,Medium,Opportunities,Starred Deals,,,2025-09-10,,2,1
+D-SUPPORT-112,Export timeout on Opportunities module,Closed,Code Change,Critical,Opportunities,Export,Sarah Lee,Lisa Park,2025-09-12,2025-09-20,20,8
+D-SUPPORT-113,Duplicate - export timeout,Closed,Duplicate,Low,Opportunities,Export,,,2025-09-14,,0,0
+D-SUPPORT-114,Filtering by date range returns wrong results,Closed,Code Change,High,Opportunities,Filtering,John Smith,Jane Doe,2025-09-15,2025-09-25,8,3
+D-SUPPORT-115,Dashboard chart not refreshing,Closed,Feature Flag Update,Medium,Dashboards,Config,Tom Wilson,Mike Chen,2025-09-18,,1,0
+D-SUPPORT-116,Field error on bulk update,Closed,Code Change,High,Opportunities,Field Error,John Smith,Lisa Park,2025-09-20,2025-09-30,14,5
+D-SUPPORT-117,Grouping breaks with custom fields,Closed,Code Change,Medium,Opportunities,Grouping,Sarah Lee,Jane Doe,2025-09-22,2025-10-02,6,2
+D-SUPPORT-118,Request: add export to PDF,Closed,Feature Request,Low,Opportunities,Export,,,2025-09-25,,0,0
+D-SUPPORT-119,Saved views not persisting filters,Closed,Code Change,High,Opportunities,Saved Views,John Smith,Mike Chen,2025-09-28,2025-10-08,8,3
+D-SUPPORT-120,Not reproducible - field error intermittent,Closed,Not Reproducible,Medium,Opportunities,Field Error,,,2025-10-01,,2,1
+D-SUPPORT-121,Account field mapping incorrect,Closed,Code Change,Medium,Accounts,Field Error,Tom Wilson,Lisa Park,2025-10-03,2025-10-13,6,2
+D-SUPPORT-122,Export includes deleted records,Closed,Code Change,High,Opportunities,Export,Sarah Lee,Jane Doe,2025-10-05,2025-10-15,10,3
+D-SUPPORT-123,Filter AND/OR logic incorrect,Closed,Code Change,Critical,Opportunities,Filtering,John Smith,Mike Chen,2025-10-08,2025-10-18,16,5
+D-SUPPORT-124,Duplicate - filter logic,Closed,Duplicate,Low,Opportunities,Filtering,,,2025-10-10,,0,0
+D-SUPPORT-125,Dashboard scope selector not working,Closed,Config Change,Medium,Dashboards,Scope,Tom Wilson,Lisa Park,2025-10-12,,3,1
+D-SUPPORT-126,Explain how currency conversion works,Closed,Product Explanation,Low,Opportunities,Currency,,,2025-10-15,,1,0
+D-SUPPORT-127,Field error when adding new opportunity,Closed,Code Change,High,Opportunities,Field Error,John Smith,Jane Doe,2025-10-18,2025-10-28,8,3
+D-SUPPORT-128,Aggregation totals off by one,Closed,Code Change,Medium,Opportunities,Aggregation,Sarah Lee,Mike Chen,2025-10-20,2025-10-30,4,2
+D-SUPPORT-129,Export formatting broken in Excel,Closed,Code Change,High,Opportunities,Export,Sarah Lee,Lisa Park,2025-10-22,2025-11-01,12,5
+D-SUPPORT-130,Filtering slow on large datasets,Closed,Code Change,High,Opportunities,Filtering,John Smith,Jane Doe,2025-10-25,2025-11-05,10,3
+D-SUPPORT-131,Widget drill down not working,Closed,Code Change,Medium,Dashboards,Drill Down,Tom Wilson,Mike Chen,2025-10-28,2025-11-07,6,2
+D-SUPPORT-132,Pocket view missing fields,Closed,Config Change,Low,Opportunities,Pocket,,,2025-11-01,,2,1
+D-SUPPORT-133,Field error on date picker,Closed,Code Change,High,Opportunities,Field Error,John Smith,Lisa Park,2025-11-03,2025-11-13,8,3
+D-SUPPORT-134,History tracking shows wrong user,Closed,Code Change,Medium,Opportunities,History Tracking,Sarah Lee,Jane Doe,2025-11-05,2025-11-15,6,2
+D-SUPPORT-135,Export hangs on Dashboards module,Closed,Code Change,High,Dashboards,Export,Tom Wilson,Mike Chen,2025-11-08,2025-11-18,14,5
+D-SUPPORT-136,Duplicate - date picker field error,Closed,Duplicate,Low,Opportunities,Field Error,,,2025-11-10,,0,0
+D-SUPPORT-137,SQS queue processing delay,Closed,Code Change,Critical,Opportunities,SQS,John Smith,Lisa Park,2025-11-12,2025-11-22,20,8
+D-SUPPORT-138,Filter presets not saving,Closed,Code Change,High,Opportunities,Filtering,Sarah Lee,Jane Doe,2025-11-15,2025-11-25,8,3
+D-SUPPORT-139,Details panel not loading,Closed,Code Change,Medium,Opportunities,Details,Tom Wilson,Mike Chen,2025-11-18,2025-11-28,4,2
+D-SUPPORT-140,Explain grouping behavior,Closed,Product Explanation,Low,Opportunities,Grouping,,,2025-11-20,,1,0
+D-SUPPORT-141,Field error on required fields,Closed,Code Change,High,Opportunities,Field Error,John Smith,Lisa Park,2025-11-22,2025-12-02,10,3
+D-SUPPORT-142,Export column order wrong,Closed,Code Change,Medium,Opportunities,Export,Sarah Lee,Jane Doe,2025-11-25,2025-12-05,6,2
+D-SUPPORT-143,Filtering by custom field fails,Closed,Code Change,High,Opportunities,Filtering,John Smith,Mike Chen,2025-11-28,2025-12-08,12,5
+D-SUPPORT-144,Account dashboard widget error,Closed,Code Change,Medium,Accounts,Aggregation,Tom Wilson,Lisa Park,2025-12-01,2025-12-11,4,2
+D-SUPPORT-145,Not reproducible - export issue,Closed,Not Reproducible,Medium,Opportunities,Export,,,2025-12-03,,2,1
+D-SUPPORT-146,Feature flag needs update for new filter,Closed,Feature Flag Update,Medium,Opportunities,Filtering,,,2025-12-05,,1,0
+D-SUPPORT-147,Field error after upgrade,Closed,Code Change,Critical,Opportunities,Field Error,John Smith,Jane Doe,2025-12-08,2025-12-18,16,5
+D-SUPPORT-148,Sorting order reversed,Closed,Code Change,Medium,Opportunities,Sorting,Sarah Lee,Mike Chen,2025-12-10,2025-12-20,4,2
+D-SUPPORT-149,Clan Studio component missing,Closed,Config Change,Low,Clan Studio,Config,,,2025-12-12,,2,1
+D-SUPPORT-150,Export fails with special characters,Closed,Code Change,High,Opportunities,Export,Sarah Lee,Lisa Park,2025-12-15,2025-12-25,10,3
+D-SUPPORT-151,Duplicate - sorting issue,Closed,Duplicate,Low,Opportunities,Sorting,,,2025-12-18,,0,0
+D-SUPPORT-152,Dashboard performance degradation,Closed,Code Change,High,Dashboards,Performance,Tom Wilson,Jane Doe,2025-12-20,2025-12-30,14,5
+D-SUPPORT-153,Field error on picklist fields,Closed,Code Change,High,Opportunities,Field Error,John Smith,Mike Chen,2025-12-22,2026-01-02,8,3
+D-SUPPORT-154,Filtering UI layout broken on mobile,Closed,Code Change,Medium,Opportunities,Filtering,Sarah Lee,Lisa Park,2025-12-25,2026-01-05,6,2
+D-SUPPORT-155,Request: bulk export feature,Closed,Feature Request,Low,Opportunities,Export,,,2025-12-28,,0,0
+D-SUPPORT-156,Saved views lost after update,Closed,Code Change,High,Opportunities,Saved Views,John Smith,Jane Doe,2026-01-02,2026-01-12,10,3
+D-SUPPORT-157,Explain scope permissions,Closed,Product Explanation,Low,Opportunities,Scope,,,2026-01-05,,1,0
+D-SUPPORT-158,Currency conversion rounding error,Closed,Code Change,Medium,Opportunities,Currency,Tom Wilson,Mike Chen,2026-01-08,2026-01-18,4,2
+D-SUPPORT-159,Field error on opportunity close,Closed,Code Change,High,Opportunities,Field Error,John Smith,Lisa Park,2026-01-10,2026-01-20,12,5
+D-SUPPORT-160,Export PDF rendering issue,Closed,Code Change,High,Opportunities,Export,Sarah Lee,Jane Doe,2026-01-12,2026-01-22,10,3
+D-SUPPORT-161,Grouping totals incorrect,Closed,Code Change,Medium,Opportunities,Grouping,Tom Wilson,Mike Chen,2026-01-15,2026-01-25,6,2
+D-SUPPORT-162,Duplicate - currency rounding,Closed,Duplicate,Low,Opportunities,Currency,,,2026-01-18,,0,0
+D-SUPPORT-163,Filter reset not clearing all fields,Closed,Code Change,High,Opportunities,Filtering,John Smith,Lisa Park,2026-01-20,2026-01-30,8,3
+D-SUPPORT-164,Account import field mapping,Closed,Config Change,Medium,Accounts,Field Error,,,2026-01-22,,2,1
+D-SUPPORT-165,Widgets not loading on slow connections,Closed,Code Change,Medium,Dashboards,Widgets,Tom Wilson,Jane Doe,2026-01-25,2026-02-04,6,2
+D-SUPPORT-166,Field error on multi-select dropdown,Closed,Code Change,High,Opportunities,Field Error,John Smith,Mike Chen,2026-01-28,2026-02-07,10,3
+D-SUPPORT-167,Not reproducible - grouping error,Closed,Not Reproducible,Medium,Opportunities,Grouping,,,2026-02-01,,2,1

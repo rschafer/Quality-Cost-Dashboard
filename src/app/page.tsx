@@ -96,6 +96,8 @@ export default function HomePage() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
+  const [costBreakdownView, setCostBreakdownView] = useState<"category" | "module">("category");
+  const [costChartType, setCostChartType] = useState<"bar" | "table">("bar");
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
     const fileArray = Array.from(newFiles).filter(
@@ -529,43 +531,138 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Cost by category */}
+        {/* Cost breakdown — toggle between category and module */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Cost by Bug Category</CardTitle>
-            <CardDescription className="text-xs">Where engineering dollars go. Click a category for details and suggestions.</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Cost Breakdown</CardTitle>
+                <CardDescription className="text-xs">Where engineering dollars go.{costBreakdownView === "category" && " Click a category for details."}</CardDescription>
+              </div>
+              <div className="flex gap-1">
+                <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                  <button
+                    onClick={() => setCostBreakdownView("category")}
+                    className={`px-2.5 py-1 transition-colors ${
+                      costBreakdownView === "category"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    By Category
+                  </button>
+                  <button
+                    onClick={() => setCostBreakdownView("module")}
+                    className={`px-2.5 py-1 transition-colors ${
+                      costBreakdownView === "module"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    By Module
+                  </button>
+                </div>
+                <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                  {(["bar", "table"] as const).map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setCostChartType(v)}
+                      className={`px-2.5 py-1 transition-colors capitalize ${
+                        costChartType === v
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1.5">
-              {stats.costByCategory.map((cat, i) => {
-                const pct = stats.totalEstimatedCost > 0 ? (cat.cost / stats.totalEstimatedCost) * 100 : 0;
+            {(() => {
+              const items = costBreakdownView === "category" ? stats.costByCategory : stats.costByModule;
+              const maxCost = items.length > 0 ? items[0].cost : 1;
+
+              if (costChartType === "table") {
                 return (
-                  <button
-                    key={cat.name}
-                    onClick={() => handleCategoryClick(cat.name)}
-                    className="group flex items-center gap-2 text-sm w-full text-left hover:bg-accent/50 rounded p-0.5 -m-0.5 transition-colors cursor-pointer"
-                  >
-                    <span className="w-28 text-right truncate text-xs font-medium text-primary underline underline-offset-2 decoration-primary/40 group-hover:decoration-primary flex items-center justify-end gap-1">
-                      {cat.name}
-                      <svg className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                    </span>
-                    <div className="flex-1 h-6 bg-muted/30 rounded overflow-hidden relative">
-                      <div
-                        className="h-full rounded"
-                        style={{
-                          width: `${Math.max(pct, 2)}%`,
-                          backgroundColor: i < 3 ? ["#dc2626", "#ea580c", "#d97706"][i] : "#3b82f6",
-                        }}
-                      />
-                      <span className="absolute inset-0 flex items-center px-2 text-xs">
-                        {fmt(cat.cost)} &middot; {cat.count} bugs
-                      </span>
-                    </div>
-                  </button>
+                  <div className="space-y-1.5">
+                    {items.map((item) => (
+                      <div key={item.name} className="flex items-center justify-between text-sm">
+                        {costBreakdownView === "category" ? (
+                          <button
+                            onClick={() => handleCategoryClick(item.name)}
+                            className="text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary text-xs font-medium"
+                          >
+                            {item.name}
+                          </button>
+                        ) : (
+                          <span className="text-xs font-medium">{item.name}</span>
+                        )}
+                        <span className="font-mono text-xs">
+                          {fmt(item.cost)} <span className="text-muted-foreground">· {item.count} bugs</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 );
-              })}
-            </div>
-            {stats.costByCategory.length >= 3 && (
+              }
+
+              return (
+                <div className="space-y-1.5">
+                  {items.map((item, i) => {
+                    const pct = maxCost > 0 ? (item.cost / maxCost) * 100 : 0;
+                    return costBreakdownView === "category" ? (
+                      <button
+                        key={item.name}
+                        onClick={() => handleCategoryClick(item.name)}
+                        className="group flex items-center gap-2 text-sm w-full text-left hover:bg-accent/50 rounded p-0.5 -m-0.5 transition-colors cursor-pointer"
+                      >
+                        <span className="w-28 text-right truncate text-xs font-medium text-primary underline underline-offset-2 decoration-primary/40 group-hover:decoration-primary flex items-center justify-end gap-1">
+                          {item.name}
+                          <svg className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </span>
+                        <div className="flex-1 h-6 rounded overflow-hidden relative">
+                          <div
+                            className="h-full rounded"
+                            style={{
+                              width: `${Math.max(pct, 3)}%`,
+                              backgroundColor: i < 3 ? ["#dc2626", "#ea580c", "#d97706"][i] : "#3b82f6",
+                            }}
+                          />
+                          <span className="absolute inset-0 flex items-center px-2 text-xs">
+                            {fmt(item.cost)} &middot; {item.count} bugs
+                          </span>
+                        </div>
+                      </button>
+                    ) : (
+                      <div
+                        key={item.name}
+                        className="flex items-center gap-2 text-sm p-0.5"
+                      >
+                        <span className="w-28 text-right truncate text-xs font-medium">
+                          {item.name}
+                        </span>
+                        <div className="flex-1 h-6 rounded overflow-hidden relative">
+                          <div
+                            className="h-full rounded"
+                            style={{
+                              width: `${Math.max(pct, 3)}%`,
+                              backgroundColor: i < 3 ? ["#7c3aed", "#14b8a6", "#3b82f6"][i] : "#6b7280",
+                            }}
+                          />
+                          <span className="absolute inset-0 flex items-center px-2 text-xs">
+                            {fmt(item.cost)} &middot; {item.count} bugs
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+            {costBreakdownView === "category" && stats.costByCategory.length >= 3 && (
               <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
                 Fixing <strong>{stats.costByCategory.slice(0, 3).map(c => c.name).join(", ")}</strong> saves{" "}
                 <strong>{fmt(stats.costByCategory.slice(0, 3).reduce((s, c) => s + c.cost, 0))}</strong>{" "}
@@ -597,23 +694,6 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Cost by module */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Cost by Module</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {stats.costByModule.map((mod) => (
-                <div key={mod.name} className="flex items-center justify-between text-sm">
-                  <span>{mod.name} <span className="text-muted-foreground text-xs">({mod.count})</span></span>
-                  <span className="font-mono font-medium">{fmt(mod.cost)}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Suggested Changes */}
         {suggestions.length > 0 && (

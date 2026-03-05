@@ -218,7 +218,7 @@ export default function HomePage() {
     fetchWithFilters(EMPTY_FILTERS);
   }, [fetchWithFilters]);
 
-  const hasActiveFilters = filters.dateFrom || filters.dateTo || filters.priority.length || filters.resolution.length || filters.module.length || filters.category.length;
+  const hasActiveFilters = !!(filters.dateFrom || filters.dateTo || filters.priority.length || filters.resolution.length || filters.module.length || filters.category.length);
 
   const handleCategoryClick = useCallback(async (categoryName: string) => {
     if (!snapshotId) return;

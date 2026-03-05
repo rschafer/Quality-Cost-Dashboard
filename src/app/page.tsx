@@ -689,12 +689,10 @@ export default function HomePage() {
         {/* Summary & Suggested Changes */}
         {suggestions.length > 0 && (
           <Card>
-            <CardHeader className="pb-3">
-              <div>
-                <CardTitle className="text-base">Summary &amp; Suggested Changes</CardTitle>
-              </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Summary &amp; Suggested Changes</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <p className="text-sm text-foreground mb-4 leading-relaxed">
                 {(() => {
                   const topCat = stats.costByCategory[0];

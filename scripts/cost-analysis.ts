@@ -113,6 +113,43 @@ if (resEntries.length > 0) {
   console.log("└────────────────────────┴───────┴────────┘\n");
 }
 
+// Per-ticket cost analysis (sorted by cost descending)
+const ticketCosts = bugs
+  .map((b) => ({ ...b, estimate: estimateBugCost(b, hourlyRate) }))
+  .sort((a, b) => b.estimate.estimatedCost - a.estimate.estimatedCost);
+
+console.log("TICKET COST ANALYSIS (top 20)");
+console.log("┌────────────┬────────────────────────────────┬──────────┬────────┬───────────┬──────────────┐");
+console.log("│ Key        │ Summary                        │ Priority │ Hours  │ Cost      │ Method       │");
+console.log("├────────────┼────────────────────────────────┼──────────┼────────┼───────────┼──────────────┤");
+for (const t of ticketCosts.slice(0, 20)) {
+  const key = (t.jiraKey || "—").slice(0, 10);
+  const summ = t.summary.slice(0, 30);
+  const pri = (t.priority || "—").slice(0, 8);
+  const method = t.estimate.methodology.replace("_", " ");
+  console.log(
+    `│ ${pad(key, 10)} │ ${pad(summ, 30)} │ ${pad(pri, 8)} │ ${padL(String(t.estimate.estimatedHours), 6)} │ ${padL(fmt(t.estimate.estimatedCost), 9)} │ ${pad(method, 12)} │`
+  );
+}
+console.log("└────────────┴────────────────────────────────┴──────────┴────────┴───────────┴──────────────┘");
+
+// Method breakdown
+const methodCounts: Record<string, { count: number; cost: number }> = {};
+for (const t of ticketCosts) {
+  const m = t.estimate.methodology.replace("_", " ");
+  if (!methodCounts[m]) methodCounts[m] = { count: 0, cost: 0 };
+  methodCounts[m].count++;
+  methodCounts[m].cost += t.estimate.estimatedCost;
+}
+console.log("\nCOST ESTIMATION METHODS");
+console.log("┌──────────────────┬───────┬────────────┐");
+console.log("│ Method           │ Count │ Total Cost │");
+console.log("├──────────────────┼───────┼────────────┤");
+for (const [method, { count, cost }] of Object.entries(methodCounts).sort((a, b) => b[1].cost - a[1].cost)) {
+  console.log(`│ ${pad(method, 16)} │ ${padL(String(count), 5)} │ ${padL(fmt(Math.round(cost)), 10)} │`);
+}
+console.log("└──────────────────┴───────┴────────────┘\n");
+
 // Summary
 const topCat = stats.costByCategory[0];
 const lines: string[] = [];

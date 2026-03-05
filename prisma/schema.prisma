@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Bug {
+  id                String    @id @default(uuid())
+  jiraKey           String?
+  summary           String
+  description       String?
+  status            String
+  resolution        String?
+  priority          String?
+  issueType         String?
+  module            String?
+  productCategory   String?
+  rootCause         String?
+  assignee          String?
+  reporter          String?
+  labels            String?
+  components        String?
+  storyPoints       Float?
+  timeEstimateHours Float?
+  timeSpentHours    Float?
+  createdAt         DateTime
+  resolvedAt        DateTime?
+  updatedAt         DateTime?
+  importedAt        DateTime  @default(now())
+  snapshotId        String
+  snapshot          Snapshot  @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  customFields      String?
+
+  @@index([snapshotId])
+  @@index([module])
+  @@index([productCategory])
+  @@index([resolution])
+  @@index([createdAt])
+}
+
+model Snapshot {
+  id             String     @id @default(uuid())
+  name           String
+  description    String?
+  source         String
+  sourceDetail   String?
+  projectKey     String?
+  dateRangeStart DateTime?
+  dateRangeEnd   DateTime?
+  bugCount       Int        @default(0)
+  importedAt     DateTime   @default(now())
+  bugs           Bug[]
+  analyses       Analysis[]
+
+  @@index([importedAt])
+}
+
+model Analysis {
+  id           String   @id @default(uuid())
+  snapshotId   String
+  snapshot     Snapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  analysisType String
+  content      String
+  modelUsed    String   @default("claude-sonnet-4-20250514")
+  tokenCount   Int?
+  generatedAt  DateTime @default(now())
+
+  @@index([snapshotId])
+  @@index([analysisType])
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}

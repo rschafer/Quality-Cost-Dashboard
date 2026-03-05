@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { computeStats } from "@/lib/stats";
+import { DEFAULT_HOURLY_RATE } from "@/lib/cost-calculator";
 import type { Bug } from "@/generated/prisma/client";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const snapshotId = searchParams.get("snapshotId");
+  const hourlyRate = parseFloat(searchParams.get("hourlyRate") || "") || DEFAULT_HOURLY_RATE;
 
   if (!snapshotId) {
     return NextResponse.json(
@@ -73,7 +75,7 @@ export async function GET(request: NextRequest) {
       categories: [...new Set(allBugs.map((b) => b.productCategory).filter(Boolean))].sort() as string[],
     };
 
-    const stats = computeStats(bugs);
+    const stats = computeStats(bugs, hourlyRate);
 
     return NextResponse.json({ ...stats, filterOptions });
   } catch (error) {

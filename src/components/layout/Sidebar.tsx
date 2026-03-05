@@ -95,10 +95,7 @@ export default function Sidebar() {
 
       <div className="p-4 border-t border-border">
         <p className="text-xs text-muted-foreground">
-          Hourly rate: $67/hr
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Based on $140K/yr avg
+          Rate configurable on dashboard
         </p>
       </div>
     </aside>

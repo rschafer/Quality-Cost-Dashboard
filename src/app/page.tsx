@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { DEFAULT_COLUMN_MAPPING, parseCSVFile } from "@/lib/csv-parser";
 import { computeStats } from "@/lib/stats";
+import { DEFAULT_HOURLY_RATE } from "@/lib/cost-calculator";
 import { generateDashboardSuggestions } from "@/lib/suggestions";
 import type { Suggestion, CategoryDetail } from "@/lib/suggestions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -98,6 +99,10 @@ export default function HomePage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
   const [costBreakdownView, setCostBreakdownView] = useState<"category" | "module" | "resolution" | "moduleDist">("category");
+  const [hourlyRate, setHourlyRate] = useState(DEFAULT_HOURLY_RATE);
+  const [rateInput, setRateInput] = useState(String(DEFAULT_HOURLY_RATE));
+  const [editingRate, setEditingRate] = useState(false);
+  const [mockBugs, setMockBugs] = useState<Parameters<typeof computeStats>[0] | null>(null);
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
     const fileArray = Array.from(newFiles).filter(
@@ -190,11 +195,12 @@ export default function HomePage() {
     setError("");
   }, []);
 
-  const fetchWithFilters = useCallback(async (f: Filters) => {
+  const fetchWithFilters = useCallback(async (f: Filters, rate?: number) => {
     if (!snapshotId) return;
     setFilterLoading(true);
     try {
       const params = new URLSearchParams({ snapshotId });
+      params.set("hourlyRate", String(rate ?? hourlyRate));
       if (f.dateFrom) params.set("dateFrom", f.dateFrom);
       if (f.dateTo) params.set("dateTo", f.dateTo);
       if (f.priority.length) params.set("priority", f.priority.join(","));
@@ -206,7 +212,7 @@ export default function HomePage() {
     } finally {
       setFilterLoading(false);
     }
-  }, [snapshotId]);
+  }, [snapshotId, hourlyRate]);
 
   const applyFilters = useCallback((newFilters: Filters) => {
     setFilters(newFilters);
@@ -273,7 +279,8 @@ export default function HomePage() {
         resolvedAt: b.resolvedAt,
       }));
 
-      const computed = computeStats(bugs);
+      setMockBugs(bugs);
+      const computed = computeStats(bugs, hourlyRate);
       const filterOptions = {
         priorities: [...new Set(bugs.map((b) => b.priority).filter(Boolean) as string[])].sort(),
         resolutions: [...new Set(bugs.map((b) => b.resolution).filter(Boolean) as string[])].sort(),
@@ -287,7 +294,25 @@ export default function HomePage() {
     } finally {
       setLoadingPreview(false);
     }
-  }, []);
+  }, [hourlyRate]);
+
+  const commitRate = useCallback(() => {
+    const parsed = parseFloat(rateInput);
+    if (!parsed || parsed <= 0 || parsed === hourlyRate) {
+      setRateInput(String(hourlyRate));
+      setEditingRate(false);
+      return;
+    }
+    setHourlyRate(parsed);
+    setEditingRate(false);
+    // Recalculate: mock data path (client-side) or API path
+    if (mockBugs) {
+      const computed = computeStats(mockBugs, parsed);
+      setStats((prev) => prev ? { ...computed, filterOptions: prev.filterOptions } as DashboardStats : null);
+    } else if (snapshotId) {
+      fetchWithFilters(filters, parsed);
+    }
+  }, [rateInput, hourlyRate, mockBugs, snapshotId, fetchWithFilters, filters]);
 
   // ── DASHBOARD VIEW ──
   if (stats) {
@@ -298,26 +323,22 @@ export default function HomePage() {
       ([name, { count, percent }]) => ({ name, count, percent })
     );
 
-    const filterIcon = (
-      <button
-        onClick={() => setFiltersOpen(!filtersOpen)}
-        className="relative p-1 rounded hover:bg-accent transition-colors"
-        title="Toggle filters"
-      >
-        <svg className="w-3.5 h-3.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-        {hasActiveFilters && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary" />}
-      </button>
-    );
-
     return (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">Bug Analysis</h2>
-            <p className="text-sm text-foreground mt-1">
-              {stats.dateRange} &middot; {stats.totalBugs} tickets
-              {filterLoading && <span className="ml-2 text-xs text-muted-foreground">Updating...</span>}
-            </p>
+            <button
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              className="flex items-center gap-1.5 text-sm text-foreground mt-1 hover:text-primary transition-colors group"
+            >
+              <span className={hasActiveFilters ? "underline decoration-primary underline-offset-2" : ""}>
+                {stats.dateRange} &middot; {stats.totalBugs} tickets
+              </span>
+              <svg className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+              {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+              {filterLoading && <span className="text-xs text-muted-foreground">Updating...</span>}
+            </button>
           </div>
           <Button variant="outline" size="sm" onClick={handleReset}>
             Upload New Data
@@ -484,13 +505,37 @@ export default function HomePage() {
                     <svg className="w-3.5 h-3.5 inline-block ml-1 -mt-0.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeWidth={2} d="M12 16v-4m0-4h.01" /></svg>
                   </p>
                   <p className="text-2xl font-bold mt-1 font-mono">{fmt(stats.totalEstimatedCost)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.totalBugs} tickets @ $67/hr</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stats.totalBugs} tickets @{" "}
+                    {editingRate ? (
+                      <span className="inline-flex items-center">
+                        $<input
+                          type="number"
+                          className="w-14 px-1 py-0 border rounded text-xs font-mono bg-background"
+                          value={rateInput}
+                          onChange={(e) => setRateInput(e.target.value)}
+                          onBlur={commitRate}
+                          onKeyDown={(e) => { if (e.key === "Enter") commitRate(); if (e.key === "Escape") { setRateInput(String(hourlyRate)); setEditingRate(false); } }}
+                          autoFocus
+                          min="1"
+                          step="1"
+                        />/hr
+                      </span>
+                    ) : (
+                      <button
+                        className="underline decoration-dashed underline-offset-2 hover:text-foreground transition-colors cursor-pointer"
+                        onClick={(e) => { e.stopPropagation(); setRateInput(String(hourlyRate)); setEditingRate(true); }}
+                      >
+                        ${hourlyRate}/hr
+                      </button>
+                    )}
+                  </p>
                 </CardContent>
               </Card>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-xs text-left leading-relaxed">
               <p className="font-semibold mb-1">How cost is calculated</p>
-              <p>Each bug&apos;s cost = estimated hours × $67/hr ($140K/yr engineer).</p>
+              <p>Each bug&apos;s cost = estimated hours × ${hourlyRate}/hr (${Math.round(hourlyRate * 2080).toLocaleString()}/yr engineer).</p>
               <p className="mt-1">Hours are derived from (in priority order):</p>
               <ol className="list-decimal list-inside mt-0.5 space-y-0.5">
                 <li>Actual time spent (if logged)</li>
@@ -538,7 +583,6 @@ export default function HomePage() {
                 </CardDescription>
               </div>
               <div className="flex items-center gap-1">
-                {filterIcon}
                 <div className="flex rounded-md border border-border overflow-hidden text-xs">
                   {([
                     { key: "category", label: "Cost: Category" },
@@ -622,7 +666,6 @@ export default function HomePage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">Ticket Quality</CardTitle>
-              {filterIcon}
             </div>
           </CardHeader>
           <CardContent>
@@ -652,7 +695,6 @@ export default function HomePage() {
                   <CardTitle className="text-base">Suggested Changes</CardTitle>
                   <CardDescription className="text-xs">Data-driven recommendations to reduce bug cost and improve quality.</CardDescription>
                 </div>
-                {filterIcon}
               </div>
             </CardHeader>
             <CardContent>

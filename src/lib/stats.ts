@@ -177,9 +177,11 @@ export function computeStats(
     .filter(Boolean)
     .map((d) => new Date(d))
     .sort((a, b) => a.getTime() - b.getTime());
+  const fmtDate = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const dateRange =
     dates.length > 0
-      ? `${dates[0].toISOString().split("T")[0]} to ${dates[dates.length - 1].toISOString().split("T")[0]}`
+      ? `${fmtDate(dates[0])} – ${fmtDate(dates[dates.length - 1])}`
       : "N/A";
 
   return {
